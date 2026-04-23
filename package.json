@@ -1,0 +1,52 @@
+{
+  "name": "trabalho-2",
+  "version": "1.0.0",
+  "description": "Trabalho 2 - Minimizacao de funcoes",
+  "type": "module",
+  "main": "electron/main.js",
+  "scripts": {
+    "desktop": "electron .",
+    "dist": "electron-builder --win portable",
+    "pack": "electron-builder --dir",
+    "start": "node server.js",
+    "verify": "node verify.js"
+  },
+  "keywords": [
+    "algoritmo-genetico",
+    "tomassini",
+    "ga",
+    "game"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pdfjs-dist": "^5.5.207"
+  },
+  "devDependencies": {
+    "electron": "^41.0.4",
+    "electron-builder": "^26.8.1"
+  },
+  "build": {
+    "appId": "br.edu.ufu.trabalho2",
+    "productName": "Trabalho 2",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "img/**/*",
+      "src/**/*",
+      "index.html",
+      "styles.css",
+      "server.js",
+      "package.json"
+    ],
+    "win": {
+      "artifactName": "Trabalho-2-portable-${version}.${ext}",
+      "signAndEditExecutable": false,
+      "target": [
+        "portable"
+      ]
+    }
+  }
+}

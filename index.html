@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trabalho 2</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="backdrop"></div>
+    <div class="page-shell">
+      <header class="hero panel">
+        <div class="hero-header">
+          <div class="hero-copy">
+            <p class="eyebrow">Curso de Mestrado Academico em Engenharia Eletrica</p>
+            <h1>Trabalho 02 - Minimizacao de fun&ccedil;&otilde;es</h1>
+            <p class="lead">12612EEL011 - Mateus Flausino Concei&ccedil;&atilde;o</p>
+          </div>
+          <div class="hero-divider" aria-hidden="true"></div>
+          <div class="hero-brand-side" aria-label="Identidade institucional">
+            <img class="side-logo side-logo-ufu" src="./img/ufu.png" alt="Logo da UFU" />
+            <img
+              class="side-logo side-logo-pos"
+              src="./img/pos.png"
+              alt="Logo da Pos-Eletrica UFU"
+            />
+          </div>
+        </div>
+      </header>
+
+      <main class="main-grid">
+        <section class="panel controls-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">Simulacao</p>
+              <h2>Controles</h2>
+            </div>
+            <p id="statusBanner" class="status-banner">Inicializando simulacao...</p>
+          </div>
+
+          <div class="controls-row">
+            <button id="stepButton" class="action-button primary">Executar 1 geracao</button>
+            <button id="autoButton" class="action-button secondary">Execucao automatica</button>
+            <button id="resetButton" class="action-button ghost">Reiniciar</button>
+          </div>
+
+          <div class="speed-panel">
+            <label for="speedSlider">Velocidade da simulacao</label>
+            <input id="speedSlider" type="range" min="1" max="12" value="5" />
+            <span id="speedValue">5 geracoes/s</span>
+          </div>
+
+          <div class="config-panel">
+            <label for="populationInput">Tamanho da populacao</label>
+            <input
+              id="populationInput"
+              class="number-input"
+              type="number"
+              min="2"
+              max="200"
+              step="1"
+              value="50"
+            />
+          </div>
+          <span class="field-hint">A alteracao reinicia a arena com a nova populacao.</span>
+
+          <div class="stats-grid">
+            <article class="stat-card glow">
+              <span class="stat-label">Geracao</span>
+              <strong id="generationValue">0</strong>
+            </article>
+            <article class="stat-card">
+              <span class="stat-label">Melhor x</span>
+              <strong id="bestXValue">0.000</strong>
+            </article>
+            <article class="stat-card">
+              <span class="stat-label">Melhor f(x)</span>
+              <strong id="bestFxValue">0.000000</strong>
+            </article>
+            <article class="stat-card">
+              <span class="stat-label">Media da geracao</span>
+              <strong id="averageValue">0.000000</strong>
+            </article>
+            <article class="stat-card">
+              <span class="stat-label">Diversidade</span>
+              <strong id="diversityValue">0%</strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel arena-panel">
+          <div class="panel-heading compact">
+            <div>
+              <h2>Grafico da Funcao</h2>
+            </div>
+            <p id="studyFunctionValue" class="compact-note arena-note">
+              f(x) = 418.982887 - x * sin(sqrt(|x|))
+            </p>
+          </div>
+          <div class="canvas-shell">
+            <canvas id="arenaCanvas" width="1280" height="680"></canvas>
+          </div>
+          <div class="legend-row">
+            <span><i class="swatch function"></i>Funcao objetivo</span>
+            <span><i class="swatch optimum"></i>Zona do minimo global</span>
+            <span><i class="swatch agents"></i>Agentes da populacao</span>
+            <span><i class="swatch champion"></i>Campeao atual</span>
+          </div>
+        </section>
+
+        <section class="panel sidebar-panel">
+          <div class="panel-heading compact">
+            <div>
+              <p class="section-kicker">Resultados</p>
+              <h2>Melhores individuos</h2>
+            </div>
+            <p id="objectiveValue" class="compact-note">Objetivo: minimizar f(x)</p>
+          </div>
+
+          <div id="leaderboard" class="leaderboard"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
