@@ -1,7 +1,7 @@
 {
-  "name": "trabalho-2",
+  "name": "trabalho-8-parametros-continuos",
   "version": "1.0.0",
-  "description": "Trabalho 2 - Minimizacao de funcoes",
+  "description": "Trabalho 8 - Parametros Continuos",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
@@ -15,7 +15,8 @@
     "algoritmo-genetico",
     "tomassini",
     "ga",
-    "game"
+    "rastrigin",
+    "parametros-continuos"
   ],
   "author": "",
   "license": "ISC",
@@ -27,8 +28,8 @@
     "electron-builder": "^26.8.1"
   },
   "build": {
-    "appId": "br.edu.ufu.trabalho2",
-    "productName": "Trabalho 2",
+    "appId": "br.edu.ufu.trabalho8",
+    "productName": "Trabalho 8",
     "directories": {
       "output": "dist"
     },
@@ -42,7 +43,7 @@
       "package.json"
     ],
     "win": {
-      "artifactName": "Trabalho-2-portable-${version}.${ext}",
+      "artifactName": "Trabalho-8-portable-${version}.${ext}",
       "signAndEditExecutable": false,
       "target": [
         "portable"

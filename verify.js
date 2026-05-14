@@ -2,8 +2,8 @@ import { TomassiniGeneticArena } from "./src/ga-core.js";
 
 // Pequena bateria deterministica para verificar se a busca continua convergindo.
 const RUNS = 24;
-const GENERATIONS = 70;
-const SUCCESS_THRESHOLD = 0.2;
+const GENERATIONS = 260;
+const SUCCESS_THRESHOLD = 0.05;
 
 let successes = 0;
 const bestCosts = [];
@@ -38,6 +38,6 @@ console.log(
   ),
 );
 
-if (successes < RUNS * 0.8 || averageBest > 0.1 || worstBest > 1) {
+if (successes < RUNS * 0.85 || averageBest > 0.03 || worstBest > 0.15) {
   process.exitCode = 1;
 }

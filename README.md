@@ -1,51 +1,52 @@
-# Trabalho 02 - Minimizacao de funcoes
+# Trabalho 08 - Parametros Continuos
 
-Aplicacao interativa desenvolvida para demonstrar a minimizacao de uma funcao por meio de Algoritmo Genetico (AG). O projeto apresenta a evolucao da populacao em um grafico, mostra os melhores individuos de cada geracao e permite executar a busca manualmente ou em modo automatico.
+Aplicacao interativa desenvolvida para demonstrar a minimizacao da funcao de Rastrigin por meio de Algoritmo Genetico (AG) com representacao real. O projeto apresenta a evolucao de uma populacao de candidatos no plano `x1`/`x2`, mostra os melhores individuos de cada geracao e permite executar a busca manualmente ou em modo automatico.
 
 ## Problema
 
-O objetivo e encontrar o menor valor da funcao:
+O objetivo e encontrar o menor valor da funcao de Rastrigin para `n = 2`:
 
 ```text
-f(x) = 418.982887 - x * sin(sqrt(|x|))
+f(x) = 10n + soma(xi^2 - 10 cos(2*pi*xi))
 ```
 
 considerando:
 
-- Dominio de busca: `0 <= x <= 512`
-- Otimo global conhecido: `x ~= 420.968746`
-- Valor minimo esperado: `f(x) ~= 0`
+- Dimensao: `n = 2`
+- Dominio de busca: `-5.12 <= xi <= 5.12`
+- Otimo global conhecido: `x = (0, 0)`
+- Valor minimo esperado: `f(x) = 0`
 
-Esse tipo de funcao possui comportamento nao linear e regioes com vales locais, o que torna a busca por metodos puramente deterministas menos intuitiva para demonstracao. Por isso, foi usada uma abordagem evolutiva, capaz de explorar diferentes regioes do espaco de busca e melhorar a populacao ao longo das geracoes.
+A funcao de Rastrigin e multimodal: possui muitos minimos locais distribuidos pelo espaco de busca. Esse comportamento torna o problema adequado para testar algoritmos evolutivos, pois a populacao precisa equilibrar exploracao do dominio e intensificacao nas regioes de melhor custo.
 
 ## Solucao utilizada
 
-A solucao implementa um Algoritmo Genetico com individuos representados por genomas binarios. Cada genoma e decodificado para um valor real de `x` dentro do intervalo permitido, avaliado pela funcao objetivo e utilizado para formar novas geracoes.
+A solucao implementa um Algoritmo Genetico com individuos representados por vetores reais. Cada individuo possui dois genes, `x1` e `x2`, avaliados diretamente na funcao objetivo. Como se trata de um problema de minimizacao, individuos com menor valor de `f(x)` recebem maior pontuacao de selecao.
 
 Fluxo principal do algoritmo:
 
-1. Geracao de uma populacao inicial aleatoria.
-2. Decodificacao do genoma binario para um valor real de `x`.
-3. Avaliacao do custo `f(x)` de cada individuo.
-4. Conversao do custo em pontuacao de selecao, favorecendo menores valores de `f(x)`.
-5. Selecao de pais por roleta ponderada.
-6. Recombinacao por crossover de um ponto.
-7. Mutacao bit a bit.
-8. Substituicao da populacao e repeticao do processo por novas geracoes.
+1. Geracao de uma populacao inicial aleatoria no intervalo permitido.
+2. Avaliacao do custo `f(x1, x2)` de cada individuo.
+3. Conversao do custo em pontuacao de selecao, favorecendo menores valores.
+4. Selecao de pais por roleta ponderada.
+5. Recombinacao por crossover aritmetico entre vetores reais.
+6. Mutacao gaussiana nos genes, respeitando os limites do dominio.
+7. Substituicao da populacao e repeticao do processo por novas geracoes.
 
 Parametros padrao:
 
 | Parametro | Valor |
 | --- | ---: |
-| Bits por individuo | 10 |
-| Limite inferior | 0 |
-| Limite superior | 512 |
+| Dimensoes | 2 |
+| Limite inferior | -5.12 |
+| Limite superior | 5.12 |
 | Tamanho da populacao | 50 |
-| Taxa de crossover | 0.6 |
-| Taxa de mutacao | 0.01 |
-| Geracoes para verificacao | 70 |
+| Taxa de crossover | 0.75 |
+| Taxa de mutacao | 0.18 |
+| Escala da mutacao | 0.6 |
+| Geracoes para verificacao | 260 |
 
-A interface mostra a curva da funcao, a distribuicao da populacao, o melhor individuo da geracao, o melhor global encontrado, a media da geracao e a diversidade dos genomas.
+A interface mostra um mapa de calor da funcao no plano, a distribuicao da populacao, o melhor individuo da geracao, o melhor global encontrado, a media da geracao e uma medida de diversidade baseada na distancia media dos individuos ate a origem.
 
 ## Tecnologias
 

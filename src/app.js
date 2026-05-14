@@ -72,12 +72,14 @@ function resizeCanvas() {
 // Atualiza os indicadores de texto com o snapshot mais recente da arena.
 function updateHud(snapshot) {
   dom.generationValue.textContent = String(snapshot.generation);
-  dom.bestXValue.textContent = formatDecimal(snapshot.best.x, 3);
+  dom.bestXValue.textContent = `(${snapshot.best.genes.map((gene) => formatDecimal(gene, 3)).join("; ")})`;
   dom.bestFxValue.textContent = formatDecimal(snapshot.best.cost, 6);
   dom.averageValue.textContent = formatDecimal(snapshot.averageCost, 6);
   dom.diversityValue.textContent = formatPercent(snapshot.diversity);
   dom.objectiveValue.textContent = `Objetivo: minimizar ${snapshot.objectiveLabel}`;
-  dom.statusBanner.textContent = `Melhor global em x = ${formatDecimal(snapshot.bestEver.x, 3)}.`;
+  dom.statusBanner.textContent = `Melhor global em (${snapshot.bestEver.genes
+    .map((gene) => formatDecimal(gene, 3))
+    .join("; ")}).`;
   dom.studyFunctionValue.textContent = `f(x) = ${snapshot.objectiveLabel}`;
   syncPopulationUi(snapshot.config.populationSize);
 }
@@ -91,8 +93,8 @@ function renderLeaderboard(snapshot) {
           <div class="leader-rank">${index + 1}</div>
           <div class="leader-meta">
             <strong>Agente ${entry.id}</strong>
-            <span>x = ${formatDecimal(entry.x, 3)}</span>
-            <code>${entry.genome}</code>
+            <span>x1 = ${formatDecimal(entry.genes[0], 3)} | x2 = ${formatDecimal(entry.genes[1], 3)}</span>
+            <code>[${entry.genes.map((gene) => formatDecimal(gene, 4)).join("; ")}]</code>
           </div>
           <div class="leader-score">f(x) = ${formatDecimal(entry.cost, 6)}</div>
         </article>
@@ -110,27 +112,13 @@ function drawArena(snapshot) {
   const padding = { top: 42, right: 24, bottom: 42, left: 54 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
-  const minX = snapshot.config.lowerBound;
-  const maxX = snapshot.config.upperBound;
-
-  // Amostra a funcao objetivo para formar a curva de referencia do grafico.
-  const samples = [];
-  for (let index = 0; index <= 240; index += 1) {
-    const x = minX + (index / 240) * (maxX - minX);
-    samples.push({ x, y: evaluateObjective(x) });
-  }
-
-  const allValues = [
-    ...samples.map((sample) => sample.y),
-    ...snapshot.evaluated.map((entry) => entry.cost),
-  ];
-  const minY = Math.min(...allValues);
-  const maxY = Math.max(...allValues);
+  const minAxis = snapshot.config.lowerBound;
+  const maxAxis = snapshot.config.upperBound;
 
   // Converte coordenadas do problema para o espaco visivel do canvas.
-  const projectX = (x) => padding.left + ((x - minX) / (maxX - minX)) * chartWidth;
+  const projectX = (x) => padding.left + ((x - minAxis) / (maxAxis - minAxis)) * chartWidth;
   const projectY = (y) =>
-    padding.top + chartHeight - ((y - minY) / (maxY - minY || 1)) * chartHeight;
+    padding.top + chartHeight - ((y - minAxis) / (maxAxis - minAxis)) * chartHeight;
 
   ctx.clearRect(0, 0, width, height);
 
@@ -140,7 +128,29 @@ function drawArena(snapshot) {
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, width, height);
 
-  // Grade leve para facilitar a leitura da curva e dos individuos.
+  // Mapa de calor da funcao Rastrigin em duas dimensoes.
+  const grid = 54;
+  const cellWidth = chartWidth / grid;
+  const cellHeight = chartHeight / grid;
+  for (let row = 0; row < grid; row += 1) {
+    for (let column = 0; column < grid; column += 1) {
+      const x1 = minAxis + (column / (grid - 1)) * (maxAxis - minAxis);
+      const x2 = maxAxis - (row / (grid - 1)) * (maxAxis - minAxis);
+      const value = evaluateObjective([x1, x2]);
+      const intensity = Math.max(0, Math.min(1, value / 80));
+      const hue = 202 - intensity * 168;
+      const lightness = 72 - intensity * 24;
+      ctx.fillStyle = `hsl(${hue} 72% ${lightness}%)`;
+      ctx.fillRect(
+        padding.left + column * cellWidth,
+        padding.top + row * cellHeight,
+        Math.ceil(cellWidth) + 1,
+        Math.ceil(cellHeight) + 1,
+      );
+    }
+  }
+
+  // Grade leve para facilitar a leitura da superficie e dos individuos.
   ctx.strokeStyle = "rgba(19, 41, 61, 0.12)";
   ctx.lineWidth = 1;
   for (let index = 0; index <= 4; index += 1) {
@@ -160,56 +170,44 @@ function drawArena(snapshot) {
   }
 
   // Destaca a vizinhanca do minimo conhecido para comparar a busca com o alvo.
-  ctx.fillStyle = "rgba(27, 152, 224, 0.14)";
-  const optimumLeft = projectX(KNOWN_OPTIMUM.x - 6);
-  const optimumRight = projectX(KNOWN_OPTIMUM.x + 6);
-  ctx.fillRect(optimumLeft, padding.top, optimumRight - optimumLeft, chartHeight);
-
+  const optimumX = projectX(KNOWN_OPTIMUM.genes[0]);
+  const optimumY = projectY(KNOWN_OPTIMUM.genes[1]);
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.86)";
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  samples.forEach((sample, index) => {
-    const x = projectX(sample.x);
-    const y = projectY(sample.y);
-    if (index === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineTo(x, y);
-    }
-  });
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = "#13293d";
+  ctx.moveTo(optimumX - 12, optimumY);
+  ctx.lineTo(optimumX + 12, optimumY);
+  ctx.moveTo(optimumX, optimumY - 12);
+  ctx.lineTo(optimumX, optimumY + 12);
   ctx.stroke();
 
   snapshot.evaluated.forEach((entry) => {
     ctx.beginPath();
-    ctx.fillStyle = "rgba(36, 123, 160, 0.82)";
-    ctx.arc(projectX(entry.x), projectY(entry.cost), 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(19, 41, 61, 0.68)";
+    ctx.arc(projectX(entry.genes[0]), projectY(entry.genes[1]), 4.5, 0, Math.PI * 2);
     ctx.fill();
   });
 
   ctx.beginPath();
-  ctx.fillStyle = "#1b98e0";
-  ctx.arc(projectX(snapshot.best.x), projectY(snapshot.best.cost), 9, 0, Math.PI * 2);
+  ctx.fillStyle = "#f4d35e";
+  ctx.arc(projectX(snapshot.best.genes[0]), projectY(snapshot.best.genes[1]), 9, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.strokeStyle = "rgba(27, 152, 224, 0.28)";
+  ctx.strokeStyle = "rgba(244, 211, 94, 0.42)";
   ctx.lineWidth = 14;
   ctx.beginPath();
-  ctx.arc(projectX(snapshot.best.x), projectY(snapshot.best.cost), 17, 0, Math.PI * 2);
+  ctx.arc(projectX(snapshot.best.genes[0]), projectY(snapshot.best.genes[1]), 17, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.fillStyle = "#13293d";
   ctx.font = '700 13px "Trebuchet MS"';
-  ctx.fillText("0", padding.left - 6, height - padding.bottom + 22);
-  ctx.fillText("512", width - padding.right - 24, height - padding.bottom + 22);
-  ctx.fillText("f(x)", 14, padding.top - 10);
-  ctx.fillText("x", width - padding.right + 6, height - padding.bottom + 4);
+  ctx.fillText("-5.12", padding.left - 14, height - padding.bottom + 22);
+  ctx.fillText("5.12", width - padding.right - 24, height - padding.bottom + 22);
+  ctx.fillText("x2", 16, padding.top - 10);
+  ctx.fillText("x1", width - padding.right + 6, height - padding.bottom + 4);
 
   ctx.font = '700 12px "Trebuchet MS"';
-  ctx.fillText(
-    `Minimo conhecido: x ~= ${formatDecimal(KNOWN_OPTIMUM.x, 3)}`,
-    padding.left + 10,
-    padding.top + 18,
-  );
+  ctx.fillText("Minimo conhecido: (0; 0)", padding.left + 10, padding.top + 18);
 }
 
 function render(snapshot) {

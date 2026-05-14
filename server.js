@@ -80,7 +80,7 @@ export function startStaticServer({ port = PORT, host = "127.0.0.1" } = {}) {
 if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   startStaticServer({ port: PORT })
     .then(({ url: serverUrl }) => {
-      console.log(`Trabalho 2 disponivel em ${serverUrl}`);
+      console.log(`Trabalho 8 disponivel em ${serverUrl}`);
     })
     .catch((error) => {
       console.error(error.message);
