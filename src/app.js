@@ -15,6 +15,7 @@ const dom = {
   generationValue: document.querySelector("#generationValue"),
   leaderboard: document.querySelector("#leaderboard"),
   objectiveValue: document.querySelector("#objectiveValue"),
+  performanceCanvas: document.querySelector("#performanceCanvas"),
   populationInput: document.querySelector("#populationInput"),
   resetButton: document.querySelector("#resetButton"),
   speedSlider: document.querySelector("#speedSlider"),
@@ -25,6 +26,7 @@ const dom = {
 };
 
 const ctx = dom.arenaCanvas.getContext("2d");
+const performanceCtx = dom.performanceCanvas.getContext("2d");
 
 // Estado da simulacao usado pelos controles e pelo renderer.
 const state = {
@@ -61,12 +63,12 @@ function syncPopulationUi(populationSize) {
 }
 
 // Ajusta o canvas para o tamanho visivel sem perder nitidez em telas HiDPI.
-function resizeCanvas() {
+function resizeCanvas(canvas, canvasCtx) {
   const dpr = window.devicePixelRatio || 1;
-  const bounds = dom.arenaCanvas.getBoundingClientRect();
-  dom.arenaCanvas.width = Math.floor(bounds.width * dpr);
-  dom.arenaCanvas.height = Math.floor(bounds.height * dpr);
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const bounds = canvas.getBoundingClientRect();
+  canvas.width = Math.floor(bounds.width * dpr);
+  canvas.height = Math.floor(bounds.height * dpr);
+  canvasCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
 // Atualiza os indicadores de texto com o snapshot mais recente da arena.
@@ -105,7 +107,7 @@ function renderLeaderboard(snapshot) {
 
 // Desenha a funcao objetivo, a populacao atual e o melhor individuo no canvas.
 function drawArena(snapshot) {
-  resizeCanvas();
+  resizeCanvas(dom.arenaCanvas, ctx);
 
   const width = dom.arenaCanvas.clientWidth;
   const height = dom.arenaCanvas.clientHeight;
@@ -210,10 +212,94 @@ function drawArena(snapshot) {
   ctx.fillText("Minimo conhecido: (0; 0)", padding.left + 10, padding.top + 18);
 }
 
+function drawLine(canvasCtx, points, projectX, projectY, color, lineWidth = 3) {
+  canvasCtx.beginPath();
+  points.forEach((point, index) => {
+    const x = projectX(point.generation);
+    const y = projectY(point.value);
+    if (index === 0) {
+      canvasCtx.moveTo(x, y);
+    } else {
+      canvasCtx.lineTo(x, y);
+    }
+  });
+  canvasCtx.strokeStyle = color;
+  canvasCtx.lineWidth = lineWidth;
+  canvasCtx.stroke();
+}
+
+function drawPerformance(snapshot) {
+  resizeCanvas(dom.performanceCanvas, performanceCtx);
+
+  const width = dom.performanceCanvas.clientWidth;
+  const height = dom.performanceCanvas.clientHeight;
+  const padding = { top: 26, right: 22, bottom: 38, left: 58 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const history = snapshot.history;
+  const maxGeneration = Math.max(1, history[history.length - 1]?.generation ?? 1);
+  const values = history.flatMap((entry) => [entry.bestEverCost, entry.averageCost]);
+  const maxY = Math.max(1, ...values);
+  const minY = 0;
+  const projectX = (generation) => padding.left + (generation / maxGeneration) * chartWidth;
+  const projectY = (value) =>
+    padding.top + chartHeight - ((value - minY) / (maxY - minY || 1)) * chartHeight;
+
+  performanceCtx.clearRect(0, 0, width, height);
+  const background = performanceCtx.createLinearGradient(0, 0, 0, height);
+  background.addColorStop(0, "rgba(216, 229, 234, 0.96)");
+  background.addColorStop(1, "rgba(240, 246, 248, 0.98)");
+  performanceCtx.fillStyle = background;
+  performanceCtx.fillRect(0, 0, width, height);
+
+  performanceCtx.strokeStyle = "rgba(19, 41, 61, 0.12)";
+  performanceCtx.lineWidth = 1;
+  for (let index = 0; index <= 4; index += 1) {
+    const y = padding.top + (chartHeight / 4) * index;
+    performanceCtx.beginPath();
+    performanceCtx.moveTo(padding.left, y);
+    performanceCtx.lineTo(width - padding.right, y);
+    performanceCtx.stroke();
+  }
+
+  for (let index = 0; index <= 4; index += 1) {
+    const x = padding.left + (chartWidth / 4) * index;
+    performanceCtx.beginPath();
+    performanceCtx.moveTo(x, padding.top);
+    performanceCtx.lineTo(x, height - padding.bottom);
+    performanceCtx.stroke();
+  }
+
+  const bestSeries = history.map((entry) => ({
+    generation: entry.generation,
+    value: entry.bestEverCost,
+  }));
+  const averageSeries = history.map((entry) => ({
+    generation: entry.generation,
+    value: entry.averageCost,
+  }));
+
+  drawLine(performanceCtx, averageSeries, projectX, projectY, "#247ba0", 2.5);
+  drawLine(performanceCtx, bestSeries, projectX, projectY, "#0d5f8e", 3.5);
+
+  performanceCtx.fillStyle = "#13293d";
+  performanceCtx.font = '700 12px "Trebuchet MS"';
+  performanceCtx.fillText("0", padding.left - 5, height - padding.bottom + 22);
+  performanceCtx.fillText(
+    String(maxGeneration),
+    width - padding.right - 18,
+    height - padding.bottom + 22,
+  );
+  performanceCtx.fillText("f(x)", 14, padding.top - 8);
+  performanceCtx.fillText("geracao", width - padding.right - 58, height - 10);
+  performanceCtx.fillText(formatDecimal(maxY, 2), padding.left - 48, padding.top + 4);
+}
+
 function render(snapshot) {
   updateHud(snapshot);
   renderLeaderboard(snapshot);
   drawArena(snapshot);
+  drawPerformance(snapshot);
 }
 
 function runStep() {
@@ -282,6 +368,7 @@ dom.populationInput.addEventListener("change", () => {
 window.addEventListener("resize", () => {
   if (state.arena.lastSnapshot) {
     drawArena(state.arena.lastSnapshot);
+    drawPerformance(state.arena.lastSnapshot);
   }
 });
 

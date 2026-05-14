@@ -349,6 +349,20 @@ input[type="range"] {
   height: clamp(220px, 41vh, 460px);
 }
 
+.performance-block {
+  margin-top: 18px;
+}
+
+.performance-shell {
+  margin-top: 12px;
+}
+
+#performanceCanvas {
+  display: block;
+  width: 100%;
+  height: clamp(150px, 22vh, 260px);
+}
+
 .legend-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -379,6 +393,10 @@ input[type="range"] {
 
 .swatch.champion {
   background: var(--rose);
+}
+
+.swatch.average {
+  background: var(--teal);
 }
 
 .leaderboard {
@@ -487,6 +505,10 @@ input[type="range"] {
   #arenaCanvas {
     height: clamp(200px, 36vh, 390px);
   }
+
+  #performanceCanvas {
+    height: clamp(130px, 20vh, 220px);
+  }
 }
 
 @media (max-width: 720px) {
@@ -558,5 +580,9 @@ input[type="range"] {
 
   #arenaCanvas {
     height: clamp(240px, 44vh, 360px);
+  }
+
+  #performanceCanvas {
+    height: 180px;
   }
 }

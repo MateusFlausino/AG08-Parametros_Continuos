@@ -135,6 +135,7 @@ export class TomassiniGeneticArena {
     this.population = [];
     this.generation = 0;
     this.bestEver = null;
+    this.history = [];
     this.lastSnapshot = null;
     this.reset(this.seed);
   }
@@ -145,6 +146,7 @@ export class TomassiniGeneticArena {
     this.rng = createMulberry32(this.seed);
     this.generation = 0;
     this.bestEver = null;
+    this.history = [];
     this.population = Array.from(
       { length: this.config.populationSize },
       () => randomGenome(this.config, this.rng),
@@ -192,6 +194,13 @@ export class TomassiniGeneticArena {
       this.bestEver = { ...best, generation: this.generation };
     }
 
+    this.history.push({
+      generation: this.generation,
+      bestCost: best.cost,
+      bestEverCost: this.bestEver.cost,
+      averageCost,
+    });
+
     const snapshot = {
       generation: this.generation,
       config: { ...this.config },
@@ -200,6 +209,7 @@ export class TomassiniGeneticArena {
       best,
       bestEver: { ...this.bestEver },
       averageCost,
+      history: this.history.map((entry) => ({ ...entry })),
       diversity,
       championDistance,
       objectiveLabel: "20 + x1^2 - 10cos(2*pi*x1) + x2^2 - 10cos(2*pi*x2)",

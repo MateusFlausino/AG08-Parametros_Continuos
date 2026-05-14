@@ -46,7 +46,7 @@ Parametros padrao:
 | Escala da mutacao | 0.6 |
 | Geracoes para verificacao | 260 |
 
-A interface mostra um mapa de calor da funcao no plano, a distribuicao da populacao, o melhor individuo da geracao, o melhor global encontrado, a media da geracao e uma medida de diversidade baseada na distancia media dos individuos ate a origem.
+A interface mostra um mapa de calor da funcao no plano, a distribuicao da populacao, o melhor individuo da geracao, o melhor global encontrado, a media da geracao e uma medida de diversidade baseada na distancia media dos individuos ate a origem. Tambem ha um grafico de desempenho que acompanha, geracao a geracao, o melhor valor global encontrado e a media da populacao.
 
 ## Tecnologias
 
